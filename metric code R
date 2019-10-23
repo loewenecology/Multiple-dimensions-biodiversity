@@ -52,6 +52,12 @@ feed.abund<-zoop[131:134]
 # Create second feeding guild data frame with presence absence data
 feed.pres<-as.data.frame((feed.abund != 0)*1)
 
+# Reduce to feeding guild vector 
+feed.trait<-traits[2]
+
+# Reduce to body size vector 
+size.trait<-zoop[3]
+
 ##################
 # Taxonomic metrics 
 ##################
@@ -97,8 +103,7 @@ Feed.BS.Sorensen<-beta.div.comp(feed.pres, coef="BS", quant=FALSE)
 Feed.BS.Sorensen.D.LCBD<-LCBD.comp(Taxo.BS.Sorensen$D, sqrt.D=TRUE) # Feed.BS.Sorensen.D is not Euclidean
 
 # Feeding guild community weighted mean
-Feed.BS.Sorensen<-beta.div.comp(feed.pres, coef="BS", quant=FALSE)
-Feed.BS.Sorensen.D.LCBD<-LCBD.comp(Taxo.BS.Sorensen$D, sqrt.D=TRUE) # Feed.BS.Sorensen.D is not Euclidean
+Feed.CWM<-Feed.FD.metrics$CWM$x
 
 ##################
 # Body size metrics 
@@ -262,7 +267,8 @@ Size.PADDis.Sorensen <- PADDis(zoop.pres, size.trait.dist, method = 2, diag = FA
 Size.PADDis.Sorensen.LCBD = LCBD.comp(Size.PADDis.Sorensen, sqrt.D=TRUE) # Size.PADDis.Sorensen is not Euclidean
 
 # Body size community weighted mean
-Size.FD.abund.metrics<-dbFD(size.trait, zoop.abund, w.abun = TRUE, 
+Size.FD.abund.metrics<-dbFD(size.trait, zoop.abund, w.abun = TRUE)
+Size.CWM<-Size.FD.abund.metrics$CWM$x
 
 ##################
 # Phylogenetic metrics 
