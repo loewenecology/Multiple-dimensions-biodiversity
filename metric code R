@@ -1,11 +1,11 @@
-#........................................................................................................#
-#...........Climate warming moderates impacts of sportfish introduction on prey biodiversity.............#
-#........................................................................................................#
+#...............................................................................................................................#
+#...........Climate warming moderates the impacts of introduced sportfish on multiple dimensions of prey biodiversity...........#
+#...............................................................................................................................#
 
-#........................................................................................................#
-#...........Author of the script: Charlie Loewen.........................................................#
-#...........Date latest modifications: 2019-10-21........................................................#
-#........................................................................................................#
+#...............................................................................................................................#
+#...........Author of the script: Charlie Loewen................................................................................#
+#...........Date latest modifications: 2019-10-21...............................................................................#
+#...............................................................................................................................#
 
 #########################################################################
 ################# For generating metrics used to evaluate effect of sportfish introduction on prey biodiversity
@@ -32,9 +32,9 @@ library(picante)
 # Load data in R environment
 ##################
 
-zoop=read.table("Zoop_data-sp_relabund.csv",header=T,sep=",",row.names = 1)
-traits=read.table("Zoop_data-sp_traits.csv",header=T,sep=",",row.names = 1)
-phylo=read.tree("Zoop_data-sp_tree",header=T,sep=",",row.names = 1)
+zoop=read.table("Zoop_data-sp_relabund.csv",header=T,sep=",",row.names = 1) #site by species matrix with columns for feeding guilds
+traits=read.table("Zoop_data-sp_traits.csv",header=T,sep=",",row.names = 1) #species by trait matrix
+phylo=read.tree("Zoop_data-sp_tree",header=T,sep=",",row.names = 1) #phylogenetic tree
 
 ##################
 # Prepare species data
@@ -291,4 +291,4 @@ Phylo.evenness<-FTD.comm(tdmat,spmat,q=2,abund=T,match.names=F)
 Phylo.PADDis.Sorensen <- PADDis(zoop.pres, phylo.dist, method = 2, diag = FALSE, upper = FALSE)
 Phylo.PADDis.Sorensen.LCBD = LCBD.comp(Phylo.PADDis.Sorensen, sqrt.D=TRUE) # Phylo.PADDis.Sorensen is not Euclidean
 
-#........................................................................................................#
+#...............................................................................................................................#
