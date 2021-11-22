@@ -4,19 +4,11 @@
 
 #...............................................................................................................................#
 #...........Author of the script: Charlie Loewen................................................................................#
-#...........Date latest modifications: 2019-10-21...............................................................................#
 #...............................................................................................................................#
 
 #########################################################################
 ################# For generating metrics used to evaluate effect of sportfish introduction on prey biodiversity
 #########################################################################
-
-##################
-# Clear any variables from the R environment
-##################
-
-rm(list=ls())
-while(dev.cur() != 1){ dev.off(dev.cur()) }
 
 ##################
 # Load R packages
@@ -32,7 +24,7 @@ library(picante)
 # Load data in R environment
 ##################
 
-zoop=read.table("Zoop_data-sp_relabund.csv",header=T,sep=",",row.names = 1) #site by species matrix with columns for feeding guilds
+zoop=read.table("Zoop_data-sp_relabund.csv",header=T,sep=",",row.names = 1) #site by species matrix with additional columns for feeding guilds
 traits=read.table("Zoop_data-sp_traits.csv",header=T,sep=",",row.names = 1) #species by trait matrix
 phylo=read.tree("Zoop_data-sp_tree",header=T,sep=",",row.names = 1) #phylogenetic tree
 
@@ -41,45 +33,41 @@ phylo=read.tree("Zoop_data-sp_tree",header=T,sep=",",row.names = 1) #phylogeneti
 ##################
 
 # Reduce to taxonomic data
-zoop.abund<-zoop[36:130]
+zoop.abund<-zoop[36:130] #in this case, columns 1:35 held extra (non-species) data
 
 # Create second taxonomic data frame with presence absence data
 zoop.pres<-as.data.frame((zoop.abund != 0)*1)
 
 # Reduce to feeding guild data 
-feed.abund<-zoop[131:134]
+feed.abund<-zoop[131:134] #in this case, columns 131:134 held feeding guild info (summarizing the species info)
 
 # Create second feeding guild data frame with presence absence data
 feed.pres<-as.data.frame((feed.abund != 0)*1)
 
 # Reduce to feeding guild vector 
-feed.trait<-traits[2]
+feed.trait<-traits[2] #in this case, feeding guild info was in column two
 
 # Reduce to body size vector 
-size.trait<-zoop[3]
+size.trait<-zoop[3] #in this case, body size info was in column three
 
 ##################
 # Taxonomic metrics 
 ##################
 
 # Taxonomic evenness (as inverse Simpson index divided by species richness)
-Taxo.evenness<-eveparam(zoop.abund, method = "hill", q=2)
+Taxo.evenness <- eveparam(zoop.abund, method = "hill", q = 2)
 
 # Taxonomic compositional uniqueness (as LCBD based on Sørensen dissimilarity)
-Taxo.BS.Sorensen<-beta.div.comp(zoop.pres, coef="BS", quant=FALSE)
-Taxo.BS.Sorensen.D.LCBD<-LCBD.comp(Taxo.BS.Sorensen$D, sqrt.D=TRUE) # Taxo.BS.Sorensen.D is not Euclidean
+Taxo.BS.Sorensen <- beta.div.comp(zoop.pres, coef="BS", quant = FALSE)
+Taxo.BS.Sorensen.D.LCBD <- LCBD.comp(Taxo.BS.Sorensen$D, sqrt.D = TRUE) #sqrt.D = TRUE, because Taxo.BS.Sorensen.D is not Euclidean
 
 # Ternary plot (Taxonomic compositional uniqueness)
-out.comp.3<-cbind((1-Taxo.BS.Sorensen$D), #Similarity
+out.comp.3 <- cbind((1-Taxo.BS.Sorensen$D), #change to similarity
                     Taxo.BS.Sorensen$repl,
                     Taxo.BS.Sorensen$rich)
-colnames(out.comp.3)<- c("Similarity", "Replacement", "Nestedness")
+colnames(out.comp.3) <- c("Similarity", "Replacement", "Nestedness")
 
-triangle.plot(as.data.frame(out.comp.3[, c(3, 1, 2)]),
-              show = FALSE,
-              labeltriangle = FALSE,
-              addmean = TRUE
-)
+triangle.plot(as.data.frame(out.comp.3[, c(3, 1, 2)]), show = FALSE, labeltriangle = FALSE, addmean = TRUE)
 text(-0.45, 0.5, "Nestedness", cex = 1.5)
 text(0.4, 0.5, "Replacement", cex = 1.5)
 text(0, -0.6, "Sørensen  Similarity", cex = 1.5)
@@ -91,48 +79,48 @@ colMeans(out.comp.3[, c(3, 1, 2)])
 # Feeding guild metrics 
 ##################
 
-# Feeding richness
-Feed.FD.metrics<-dbFD(feed.trait, feed.abund, w.abun = TRUE, stand.x = TRUE, calc.CWM = TRUE)
-Feed.richness<-feed.FD.metrics$sing.sp
+# Feeding guild richness
+Feed.FD.metrics <- dbFD(feed.trait, feed.abund, w.abun = TRUE, stand.x = TRUE, calc.CWM = TRUE)
+Feed.richness <- feed.FD.metrics$sing.sp
 
-# Feeding guild evenness (as inverse Simpson index divided by guild richness_
-Feed.evenness<-eveparam(feed.abund, method = "hill", q=2)
+# Feeding guild evenness (as inverse Simpson index divided by guild richness)
+Feed.evenness <- eveparam(feed.abund, method = "hill", q=2)
 
 # Feeding guild compositional uniqueness as LCBD based on Sørensen dissimilarity
-Feed.BS.Sorensen<-beta.div.comp(feed.pres, coef="BS", quant=FALSE)
-Feed.BS.Sorensen.D.LCBD<-LCBD.comp(Taxo.BS.Sorensen$D, sqrt.D=TRUE) # Feed.BS.Sorensen.D is not Euclidean
+Feed.BS.Sorensen <- beta.div.comp(feed.pres, coef = "BS", quant = FALSE)
+Feed.BS.Sorensen.D.LCBD <- LCBD.comp(Taxo.BS.Sorensen$D, sqrt.D = TRUE) #sqrt.D = TRUE, because Feed.BS.Sorensen.D is not Euclidean
 
 # Feeding guild community weighted mean
-Feed.CWM<-Feed.FD.metrics$CWM$x
+Feed.CWM <- Feed.FD.metrics$CWM$x
 
 ##################
 # Body size metrics 
 ##################
 
 # Euclidean body size distances
-size.trait.dist<-dist(size.trait)
+size.trait.dist <- dist(size.trait)
 
-# Body size richness
-Size.FD.pres.metrics<-dbFD(size.trait.dist, zoop.pres, w.abun = FALSE, )
-Size.richness<-Size.FD.metrics$FRic
+# Body size richness (range)
+Size.FD.pres.metrics <- dbFD(size.trait.dist, zoop.pres, w.abun = FALSE, )
+Size.richness <- Size.FD.metrics$FRic
 
 # Body size evenness (as functionally weighted Hill q2)
 ## FTD & FTD.comm from Scheiner, Kosman, Presley, & Willig. 2017. Decomposing functional diversity. Methods in Ecology and Evolution, 8:809-820.
-## R-script available at: https://github.com/ShanKothari/DecomposingFD
+## original R-script available at: https://github.com/ShanKothari/DecomposingFD
 
-size.trait.dist.scaled<-size.trait.dist/max(size.trait.dist)
+size.trait.dist.scaled <- size.trait.dist / max(size.trait.dist)
 
 tdmat = size.trait.dist.scaled
 spmat = zoop.abund
 
-FTD<-function(tdmat,weights=zoop.pres,q=2){
+FTD <- function(tdmat, weights = zoop.pres, q = 2){
   
-  ## contingency for one-species communities
+  # Contingency for one-species communities
   if(length(tdmat)==1 && tdmat==0){
     tdmat<-as.matrix(tdmat)
   }
   
-  ## is the input a (symmetric) matrix or dist? if not...
+  # is the input a (symmetric) matrix or dist? if not...
   if(!(class(tdmat) %in% c("matrix","dist"))){
     stop("distances must be class dist or class matrix")
   } else if(class(tdmat)=="matrix" && !isSymmetric(unname(tdmat))){
@@ -197,7 +185,7 @@ FTD<-function(tdmat,weights=zoop.pres,q=2){
   list(nsp=nsp,q=q,M=M,M.prime=M.prime,qHt=qHt,qEt=qEt,qDT=qDT,qDTM=qDTM)
 }
 
-FTD.comm<-function(tdmat,spmat,q=2,abund=T,match.names=F){
+FTD.comm <- function(tdmat, spmat, q = 2, abund = T, match.names = F){
   
   ## is the input a (symmetric) matrix or dist? if not...
   if(!(class(tdmat) %in% c("matrix","dist"))){
@@ -260,35 +248,35 @@ FTD.comm<-function(tdmat,spmat,q=2,abund=T,match.names=F){
   list(com.FTD=df.out,nsp=nsp,u.nsp=u.nsp,u.M=u.M,u.M.prime=u.M.prime,u.qEt=u.qEt,u.qDT=u.qDT,u.qDTM=u.qDTM)
 }
 
-Size.evenness<-FTD.comm(tdmat,spmat,q=2,abund=T,match.names=F)
+Size.evenness <- FTD.comm(tdmat, spmat, q = 2, abund = T, match.names = F)
 
 # Body size compositional uniqueness as LCBD based on functional Sørensen dissimilarity
 Size.PADDis.Sorensen <- PADDis(zoop.pres, size.trait.dist, method = 2, diag = FALSE, upper = FALSE)
-Size.PADDis.Sorensen.LCBD = LCBD.comp(Size.PADDis.Sorensen, sqrt.D=TRUE) # Size.PADDis.Sorensen is not Euclidean
+Size.PADDis.Sorensen.LCBD = LCBD.comp(Size.PADDis.Sorensen, sqrt.D = TRUE) #sqrt.D = TRUE because Size.PADDis.Sorensen is not Euclidean
 
 # Body size community weighted mean
-Size.FD.abund.metrics<-dbFD(size.trait, zoop.abund, w.abun = TRUE)
-Size.CWM<-Size.FD.abund.metrics$CWM$x
+Size.FD.abund.metrics <- dbFD(size.trait, zoop.abund, w.abun = TRUE)
+Size.CWM <- Size.FD.abund.metrics$CWM$x
 
 ##################
 # Phylogenetic metrics 
 ##################
 
 # Euclidean phylogenetic distances
-phylo.dist<-as.dist(cophenetic(phylo))
+phylo.dist <- as.dist(cophenetic(phylo))
 
 # Phylogenetic richness
 Phylo.PD.richness <- pd(zoop.pres, phylo)
 
 # Phylogenetic evenness (as phylogenetically weighted Hill q2; using FTD & FTD.comm as above)
-phylo.dist.scaled<-phylo.dist/max(phylo.dist)
+phylo.dist.scaled <- phylo.dist / max(phylo.dist)
 tdmat = phylo.dist.scaled
 spmat = zoop.abund
 
-Phylo.evenness<-FTD.comm(tdmat,spmat,q=2,abund=T,match.names=F)
+Phylo.evenness <- FTD.comm(tdmat, spmat, q = 2, abund = T, match.names = F)
 
 # Phylogenetic compositional uniqueness as LCBD based on phylogenetic Sørensen dissimilarity
 Phylo.PADDis.Sorensen <- PADDis(zoop.pres, phylo.dist, method = 2, diag = FALSE, upper = FALSE)
-Phylo.PADDis.Sorensen.LCBD = LCBD.comp(Phylo.PADDis.Sorensen, sqrt.D=TRUE) # Phylo.PADDis.Sorensen is not Euclidean
+Phylo.PADDis.Sorensen.LCBD = LCBD.comp(Phylo.PADDis.Sorensen, sqrt.D = TRUE) #sqrt.D = TRUE because Phylo.PADDis.Sorensen is not Euclidean
 
 #...............................................................................................................................#
